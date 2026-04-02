@@ -19,7 +19,9 @@ impl ComplexPlaneView {
 
 		// offsets are in units on the complex plane
 		let offset_x = (x - half_width) as f64 * self.units_per_pixel;
-		let offset_y = (y - half_height) as f64 * self.units_per_pixel;
+		// on the image y axis is directed downwards, on the complex plane - upwards
+		// hence the negation
+		let offset_y = -(y - half_height) as f64 * self.units_per_pixel;
 
 		let offset = Complex64 {
 			re: offset_x,
