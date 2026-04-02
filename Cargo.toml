@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-image = { version = "0.25.10", default-features = false, features = ["png"] }
+image_crate = { package = "image", version = "0.25.10", default-features = false, features = ["png"] }
 num = "0.4.3"
+rand = "0.10.0"
