@@ -2,37 +2,83 @@ mod complex_plane_view;
 mod grid;
 mod math;
 mod image;
+mod cli;
 
+use std::process::exit;
+use std::fs;
+use clap::Parser;
 use complex_plane_view::ComplexPlaneView;
-
-use num::complex::Complex64;
+use cli::Cli;
 
 fn main() {
+	let Cli {
+		zoom_buffer_size,
+		output_width,
+		output_height,
+		min_zooms,
+		max_zooms,
+		zoom_factor,
+		save_zoom_steps,
+		zoom_iterations,
+		iterations,
+		..
+	} = Cli::parse();
+
+	let n_zooms = rand::random_range(min_zooms..=max_zooms);
+
+	// the initial plane view
+	// the whole set fits between x = -2 and x = 0.5
+	// the center will be at x = -0.75
+	// so zoom_buffer_size pixels map to 2.5 units
 	let mut plane_view = ComplexPlaneView {
-		center: 0.0.into(),
-		units_per_pixel: 4.0 / 480.0,
+		center: (-0.75).into(),
+		units_per_pixel: 2.5 / zoom_buffer_size as f64,
 		rotation: 0.0,
-		width: 480,
-		height: 360,
+		width: zoom_buffer_size,
+		height: zoom_buffer_size,
 	};
 
-	for _ in 0..5 {
+	for i in 0..n_zooms {
 		let grid = plane_view
 			.gen_grid()
-			.map(|z| math::mandelbrot_iterate_bool(z, 25));
+			.map(|z| math::mandelbrot_iterate_bool(z, zoom_iterations));
 
-		let (x, y) = math::pick_border_point(&grid).unwrap();
+		if save_zoom_steps {
+			let file = fs::File::create(format!("iteration_{i}.png"))
+				.unwrap_or_else(|err| {
+					eprintln!("fatal: couldn't create/open to 'iteration_{i}.png': {err}");
+					exit(1);
+				});
+
+			image::write_monochrome(
+				file,
+				zoom_buffer_size,
+				zoom_buffer_size,
+				&grid,
+			);
+		}
+
+		let (x, y) = math::pick_border_point(&grid)
+			.expect("no border points");
+
 		plane_view.center = plane_view.xy_to_point(x, y);
 
-		plane_view.units_per_pixel /= 2.0;
+		plane_view.units_per_pixel /= zoom_factor;
 	}
 
+	use std::f64::consts::TAU;
+	plane_view.rotation = rand::random_range(0.0..TAU);
+
+	plane_view.width = output_width;
+	plane_view.height = output_height;
+
+	// gonna make it mandelbrot_iterate() sometime
 	let grid = plane_view
 		.gen_grid()
-		.map(|z| math::mandelbrot_iterate_bool(z, 50));
+		.map(|z| math::mandelbrot_iterate_bool(z, iterations));
 
 	let writer = &mut std::io::stdout();
 
-	image::write_monochrome(writer, 480, 360, &grid);
+	image::write_monochrome(writer, output_width, output_height, &grid);
 }
 
