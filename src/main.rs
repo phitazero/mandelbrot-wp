@@ -44,9 +44,9 @@ fn main() {
 			.map(|z| math::mandelbrot_iterate_bool(z, zoom_iterations));
 
 		if save_zoom_steps {
-			let file = fs::File::create(format!("iteration_{i}.png"))
+			let file = fs::File::create(format!("mandelbrot_zoom_iteration_{i}.png"))
 				.unwrap_or_else(|err| {
-					eprintln!("fatal: couldn't create/open to 'iteration_{i}.png': {err}");
+					eprintln!("fatal: couldn't create/open to 'mandelbrot_zoom_iteration_{i}.png': {err}");
 					exit(1);
 				});
 
