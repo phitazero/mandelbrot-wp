@@ -17,7 +17,7 @@ pub fn mandelbrot_iterate(mut z: Complex64, n: u32) -> Option<u32> {
 	None
 }
 
-/// Returns the absolute value of z after n iterations, or None if belongs to the set
+/// Returns true if the point belongs to the set (after n iterations), else false
 pub fn mandelbrot_iterate_bool(mut z: Complex64, n: u32) -> bool {
 	let initial = z;
 
