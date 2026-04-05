@@ -45,17 +45,20 @@ pub fn pick_border_point(grid: &Grid<bool>) -> Option<(u16, u16)> {
 
 	for x in 0..grid.width {
 		for y in 0..grid.height {
-			let this = grid.get(x, y);
-
-			if this.is_none() {
-				continue;
-			}
-
-			let right = grid.get(x + 1, y);
-			let down = grid.get(x, y + 1);
-
-			if this != right || this != down {
-				border_points.push((x, y));
+			// skips bottom row and right column, introducting some false negatives
+			// but we can afford that
+			if let (
+				Some(this),
+				Some(right),
+				Some(down),
+			) = (
+				grid.get(x, y),
+				grid.get(x + 1, y),
+				grid.get(x, y + 1),
+			) {
+				if this != right || this != down {
+					border_points.push((x, y));
+				}
 			}
 		}
 	}

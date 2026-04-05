@@ -24,12 +24,18 @@ impl<T> Grid<T>{
 		}
 	}
 
-	pub fn idx(&self, x: u16, y: u16) -> usize {
-		(y as usize) * (self.width as usize) + (x as usize)
-	}
 
 	pub fn get(&self, x: u16, y: u16) -> Option<&T> {
-		self.data.get(self.idx(x, y))
+		if x >= self.width {
+			return None;
+		}
+
+		if y >= self.height {
+			return None;
+		}
+
+		let idx = (y as usize) * (self.width as usize) + (x as usize);
+		self.data.get(idx)
 	}
 
 	pub fn map<F, B>(self, f: F) -> Grid<B>
