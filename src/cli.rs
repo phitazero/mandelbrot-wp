@@ -3,6 +3,9 @@ use clap::{Parser};
 #[derive(Debug, Parser)]
 #[command(disable_help_flag = true)] // to rebind help to -H
 pub struct Cli {
+	/// output file, - for stdout
+	pub file: String,
+
 	/// side length of the zoom buffer (a square)
 	#[arg(short = 'b', long)]
 	#[arg(default_value_t = 360)]

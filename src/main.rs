@@ -5,7 +5,7 @@ mod image;
 mod cli;
 
 use std::process::exit;
-use std::fs;
+use std::{fs, io};
 use clap::Parser;
 use complex_plane_view::ComplexPlaneView;
 use cli::Cli;
@@ -21,6 +21,7 @@ enum Mode {
 
 fn main() {
 	let Cli {
+		file,
 		zoom_buffer_size,
 		output_width,
 		output_height,
@@ -115,7 +116,15 @@ fn main() {
 		}
 	});
 
-	let writer = std::io::stdout();
+	let writer: Box<dyn io::Write> =
+		if file == "-" {
+			Box::new(io::stdout())
+		} else {
+			Box::new(fs::File::create(&file).unwrap_or_else(|err| {
+				eprintln!("fatal: couldn't open {file}: {err}");
+				exit(1);
+			}))
+		};
 
 	image::write_grayscale(writer, output_width, output_height, &grid);
 }
