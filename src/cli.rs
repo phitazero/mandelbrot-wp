@@ -25,17 +25,17 @@ pub struct Cli {
 
 	/// minimum number of zooms
 	#[arg(short = 'm', long)]
-	#[arg(default_value_t = 5)]
+	#[arg(default_value_t = 6)]
 	pub min_zooms: u8,
 
 	/// maximum number of zooms
 	#[arg(short = 'M', long)]
-	#[arg(default_value_t = 8)]
+	#[arg(default_value_t = 10)]
 	pub max_zooms: u8,
 
 	/// zoom factor
 	#[arg(short = 'z', long)]
-	#[arg(default_value_t = 1.7)]
+	#[arg(default_value_t = 3.0)]
 	pub zoom_factor: f64,
 
 	/// number of z² + c iterations when computing points to zoom into
@@ -45,7 +45,7 @@ pub struct Cli {
 
 	/// number of z² + c iterations when computing final image
 	#[arg(short = 'I', long)]
-	#[arg(default_value_t = 250)]
+	#[arg(default_value_t = 300)]
 	pub iterations: u32,
 
 	/// instead of Mandelbrot, generate a Julia set
