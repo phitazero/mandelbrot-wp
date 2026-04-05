@@ -2,23 +2,19 @@ use crate::grid::Grid;
 use num::complex::Complex64;
 use rand::seq::IndexedRandom;
 
-/// Returns the absolute value of z after n iterations, or None if belongs to the set
-pub fn mandelbrot_iterate(mut z: Complex64, n: u32) -> Option<f64> {
+/// Returns the number of iterations the point has passed before going to infinity, or None if belongs to the set
+pub fn mandelbrot_iterate(mut z: Complex64, n: u32) -> Option<u32> {
 	let initial = z;
 
-	for _ in 0..n {
-		z = z * z + initial;
-
-		if z.norm_sqr().is_nan() {
-			return Some(f64::MAX);
+	for i in 0..n {
+		if z.norm_sqr() > 4.0 {
+			return Some(i);
 		}
+
+		z = z * z + initial;
 	}
 
-	if z.norm_sqr() > 4.0 {
-		Some(z.norm())
-	} else {
-		None
-	}
+	None
 }
 
 /// Returns the absolute value of z after n iterations, or None if belongs to the set
@@ -64,8 +60,4 @@ pub fn pick_border_point(grid: &Grid<bool>) -> Option<(u16, u16)> {
 	}
 
 	border_points.choose(&mut rand::rng()).copied()
-}
-
-pub fn squash(x: f64, a: f64) -> f64 {
-	x / (x + a)
 }

@@ -26,3 +26,22 @@ where
 		ColorType::L8.into(),
 	).unwrap();
 }
+
+pub fn write_grayscale<W>(
+	writer: W,
+	width: u16,
+	height: u16,
+	grid: &Grid<u8>
+)
+where
+	W: Write
+{
+	let encoder = PngEncoder::new(writer);
+
+	encoder.write_image(
+		&grid.data,
+		width as u32,
+		height as u32,
+		ColorType::L8.into(),
+	).unwrap();
+}

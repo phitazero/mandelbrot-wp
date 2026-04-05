@@ -72,13 +72,28 @@ fn main() {
 	plane_view.width = output_width;
 	plane_view.height = output_height;
 
-	// gonna make it mandelbrot_iterate() sometime
 	let grid = plane_view
 		.gen_grid()
-		.map(|z| math::mandelbrot_iterate_bool(z, iterations));
+		.map(|z| math::mandelbrot_iterate(z, iterations));
 
-	let writer = &mut std::io::stdout();
+	let max = grid.data
+		.iter()
+		.flatten()
+		.max()
+		.unwrap();
 
-	image::write_monochrome(writer, output_width, output_height, &grid);
+	let max = *max as f64;
+
+	let grid = grid.map(|x_opt| {
+		if let Some(x) = x_opt {
+			(x as f64 / max * 255.0) as u8
+		} else {
+			0
+		}
+	});
+
+	let writer = std::io::stdout();
+
+	image::write_grayscale(writer, output_width, output_height, &grid);
 }
 
