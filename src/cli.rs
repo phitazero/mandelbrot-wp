@@ -45,6 +45,10 @@ pub struct Cli {
 	#[arg(default_value_t = 250)]
 	pub iterations: u32,
 
+	/// instead of Mandelbrot, generate a Julia set
+	#[arg(short = 'J', long)]
+	pub julia: bool,
+
 	/// debug save zoom steps
 	#[arg(short = 'D', long)]
 	pub save_zoom_steps: bool,

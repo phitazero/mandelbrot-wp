@@ -40,4 +40,30 @@ impl ComplexPlaneView {
 			|x, y| self.xy_to_point(x, y),
 		)
 	}
+
+	pub fn initial_mandelbrot(zoom_buffer_size: u16) -> Self {
+		// the whole set fits between x = -2 and x = 0.5
+		// the center will be at x = -0.75
+		// so zoom_buffer_size pixels map to 2.5 units
+		Self {
+			center: (-0.75).into(),
+			units_per_pixel: 2.5 / zoom_buffer_size as f64,
+			rotation: 0.0,
+			width: zoom_buffer_size,
+			height: zoom_buffer_size,
+		}
+	}
+
+	pub fn initial_julia(zoom_buffer_size: u16) -> Self {
+		// the whole set fits between x = -2 and x = 2
+		// the center will be at x = 0
+		// so zoom_buffer_size pixels map to 4 units
+		Self {
+			center: 0.0.into(),
+			units_per_pixel: 4.0 / zoom_buffer_size as f64,
+			rotation: 0.0,
+			width: zoom_buffer_size,
+			height: zoom_buffer_size,
+		}
+	}
 }

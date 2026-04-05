@@ -9,6 +9,15 @@ use std::fs;
 use clap::Parser;
 use complex_plane_view::ComplexPlaneView;
 use cli::Cli;
+use num::complex::Complex64;
+use std::f64::consts::TAU;
+
+/// The Julia variant stores the coefficient
+#[derive(Debug, Clone)]
+enum Mode {
+	Mandelbrot,
+	Julia(Complex64),
+}
 
 fn main() {
 	let Cli {
@@ -21,27 +30,36 @@ fn main() {
 		save_zoom_steps,
 		zoom_iterations,
 		iterations,
+		julia,
 		..
 	} = Cli::parse();
 
 	let n_zooms = rand::random_range(min_zooms..=max_zooms);
 
-	// the initial plane view
-	// the whole set fits between x = -2 and x = 0.5
-	// the center will be at x = -0.75
-	// so zoom_buffer_size pixels map to 2.5 units
-	let mut plane_view = ComplexPlaneView {
-		center: (-0.75).into(),
-		units_per_pixel: 2.5 / zoom_buffer_size as f64,
-		rotation: 0.0,
-		width: zoom_buffer_size,
-		height: zoom_buffer_size,
-	};
+	let mut plane_view;
+	let mode;
+
+	if julia {
+		plane_view = ComplexPlaneView::initial_julia(zoom_buffer_size);
+
+		let c = math::gen_julia_coefficient(zoom_buffer_size, zoom_iterations);
+		mode = Mode::Julia(c);
+
+	} else {
+		plane_view = ComplexPlaneView::initial_mandelbrot(zoom_buffer_size);
+		mode = Mode::Mandelbrot;
+	}
 
 	for i in 0..n_zooms {
-		let grid = plane_view
-			.gen_grid()
-			.map(|z| math::mandelbrot_iterate_bool(z, zoom_iterations));
+		let grid = plane_view.gen_grid();
+
+		let grid = match &mode {
+			Mode::Mandelbrot =>
+				grid.map(|z| math::julia_iterate_bool(z, z, zoom_iterations)),
+
+			Mode::Julia(c) =>
+				grid.map(|z| math::julia_iterate_bool(z, *c, zoom_iterations)),
+		};
 
 		if save_zoom_steps {
 			let file = fs::File::create(format!("mandelbrot_zoom_iteration_{i}.png"))
@@ -66,15 +84,20 @@ fn main() {
 		plane_view.units_per_pixel /= zoom_factor;
 	}
 
-	use std::f64::consts::TAU;
 	plane_view.rotation = rand::random_range(0.0..TAU);
 
 	plane_view.width = output_width;
 	plane_view.height = output_height;
 
-	let grid = plane_view
-		.gen_grid()
-		.map(|z| math::mandelbrot_iterate(z, iterations));
+	let grid = plane_view.gen_grid();
+
+	let grid = match &mode {
+		Mode::Mandelbrot =>
+			grid.map(|z| math::julia_iterate(z, z, iterations)),
+
+		Mode::Julia(c) =>
+			grid.map(|z| math::julia_iterate(z, *c, iterations)),
+	};
 
 	let max = grid.data
 		.iter()
@@ -96,4 +119,3 @@ fn main() {
 
 	image::write_grayscale(writer, output_width, output_height, &grid);
 }
-
