@@ -63,11 +63,7 @@ fn main() {
 		};
 
 		if save_zoom_steps {
-			let file = fs::File::create(format!("mandelbrot_zoom_iteration_{i}.png"))
-				.unwrap_or_else(|err| {
-					eprintln!("fatal: couldn't create/open to 'mandelbrot_zoom_iteration_{i}.png': {err}");
-					exit(1);
-				});
+			let file = create_file(&format!("mandelbrot_zoom_iteration_{i}.png"));
 
 			image::write_monochrome(
 				file,
@@ -116,18 +112,23 @@ fn main() {
 		if file == "-" {
 			Box::new(io::stdout())
 		} else {
-			Box::new(fs::File::create(&file).unwrap_or_else(|err| {
-				eprintln!("fatal: couldn't open {file}: {err}");
-				exit(1);
-			}))
+			Box::new(create_file(&file))
 		};
 
 	let grid = grid.map(|x_opt| {
 		x_opt.map_or(
-			0,
-			|x| (math::inv_lerp(x as f64, min, max) * 255.0) as u8,
+			0.0,
+			|x| math::inv_lerp(x as f64, min, max),
 		)
 	});
 
 	image::write_grayscale(writer, output_width, output_height, &grid);
+}
+
+fn create_file(path: &str) -> fs::File {
+	fs::File::create(path)
+		.unwrap_or_else(|err| {
+			eprintln!("fatal: couldn't create/open {path}: {err}");
+			exit(1);
+		})
 }

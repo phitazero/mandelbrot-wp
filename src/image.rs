@@ -31,15 +31,20 @@ pub fn write_grayscale<W>(
 	writer: W,
 	width: u16,
 	height: u16,
-	grid: &Grid<u8>
+	grid: &Grid<f64>
 )
 where
 	W: Write
 {
 	let encoder = PngEncoder::new(writer);
 
+	let data: Vec<u8> = grid.data
+		.iter()
+		.map(|x| (255.0 * x) as u8)
+		.collect();
+
 	encoder.write_image(
-		&grid.data,
+		&data,
 		width as u32,
 		height as u32,
 		ColorType::L8.into(),
