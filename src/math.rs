@@ -73,3 +73,7 @@ pub fn gen_julia_coefficient(zoom_buffer_size: u16, zoom_iterations: u32) -> Com
 
 	plane_view.xy_to_point(x, y)
 }
+
+pub fn inv_lerp(x: f64, min: f64, max: f64) -> f64 {
+	(x - min) / (max - min)
+}

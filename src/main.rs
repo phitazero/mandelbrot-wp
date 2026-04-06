@@ -100,21 +100,17 @@ fn main() {
 			grid.map(|z| math::julia_iterate(z, *c, iterations)),
 	};
 
-	let max = grid.data
+	let max = *grid.data
 		.iter()
 		.flatten()
 		.max()
-		.unwrap();
+		.unwrap() as f64;
 
-	let max = *max as f64;
-
-	let grid = grid.map(|x_opt| {
-		if let Some(x) = x_opt {
-			(x as f64 / max * 255.0) as u8
-		} else {
-			0
-		}
-	});
+	let min = *grid.data
+		.iter()
+		.flatten()
+		.min()
+		.unwrap() as f64;
 
 	let writer: Box<dyn io::Write> =
 		if file == "-" {
@@ -125,6 +121,13 @@ fn main() {
 				exit(1);
 			}))
 		};
+
+	let grid = grid.map(|x_opt| {
+		x_opt.map_or(
+			0,
+			|x| (math::inv_lerp(x as f64, min, max) * 255.0) as u8,
+		)
+	});
 
 	image::write_grayscale(writer, output_width, output_height, &grid);
 }
