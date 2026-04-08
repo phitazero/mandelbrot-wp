@@ -1,20 +1,15 @@
-mod complex_plane_view;
 mod grid;
 mod math;
 mod image;
 mod cli;
-mod color;
-mod gradient;
 
 use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
-use color::ColorVec;
-use complex_plane_view::ComplexPlaneView;
 use cli::Cli;
-use gradient::Gradient;
 use num::complex::Complex64;
 use std::f64::consts::TAU;
+use math::{ColorVec, Gradient, ComplexPlaneView};
 
 /// The Julia variant stores the coefficient
 #[derive(Debug, Clone)]
@@ -47,7 +42,7 @@ fn main() {
 	if julia {
 		plane_view = ComplexPlaneView::initial_julia(zoom_buffer_size);
 
-		let c = math::gen_julia_coefficient(zoom_buffer_size, zoom_iterations);
+		let c = math::julia::gen_julia_coefficient(zoom_buffer_size, zoom_iterations);
 		mode = Mode::Julia(c);
 
 	} else {
@@ -60,10 +55,10 @@ fn main() {
 
 		let grid = match &mode {
 			Mode::Mandelbrot =>
-				grid.map(|z| math::julia_iterate_bool(z, z, zoom_iterations)),
+				grid.map(|z| math::julia::iterate_bool(z, z, zoom_iterations)),
 
 			Mode::Julia(c) =>
-				grid.map(|z| math::julia_iterate_bool(z, *c, zoom_iterations)),
+				grid.map(|z| math::julia::iterate_bool(z, *c, zoom_iterations)),
 		};
 
 		if save_zoom_steps {
@@ -77,7 +72,7 @@ fn main() {
 			);
 		}
 
-		let (x, y) = math::pick_border_point(&grid)
+		let (x, y) = math::julia::pick_border_point(&grid)
 			.expect("no border points");
 
 		plane_view.center = plane_view.xy_to_point(x, y);
@@ -94,10 +89,10 @@ fn main() {
 
 	let grid = match &mode {
 		Mode::Mandelbrot =>
-			grid.map(|z| math::julia_iterate(z, z, iterations)),
+			grid.map(|z| math::julia::iterate(z, z, iterations)),
 
 		Mode::Julia(c) =>
-			grid.map(|z| math::julia_iterate(z, *c, iterations)),
+			grid.map(|z| math::julia::iterate(z, *c, iterations)),
 	};
 
 	let max = *grid.data

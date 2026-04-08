@@ -1,7 +1,6 @@
 use crate::ColorVec;
 use crate::math;
 use color_space::{Rgb, Lab};
-use std::marker::PhantomData;
 use std::ops::{Add, Mul};
 
 pub enum GradientKind {
