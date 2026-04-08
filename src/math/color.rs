@@ -23,11 +23,9 @@ impl ColorVec<Rgb> {
 
 impl ColorVec<Lab> {
 	pub fn finish(self) -> [u8; 3] {
-		let lab: Lab = self.into();
-		let rgb: Rgb = lab.into();
-		let math_rgb: ColorVec<Rgb> = rgb.into();
+		let color_vec_rgb: ColorVec<Rgb> = self.into();
 
-		math_rgb.finish()
+		color_vec_rgb.finish()
 	}
 }
 
@@ -70,6 +68,24 @@ impl From<ColorVec<Lab>> for Lab {
 			a: value.1,
 			b: value.2,
 		}
+	}
+}
+
+impl From<ColorVec<Lab>> for ColorVec<Rgb> {
+	fn from(value: ColorVec<Lab>) -> Self {
+		let inner: Lab = Lab::from(value);
+		let inner_converted: Rgb = Rgb::from(inner);
+
+		inner_converted.into()
+	}
+}
+
+impl From<ColorVec<Rgb>> for ColorVec<Lab> {
+	fn from(value: ColorVec<Rgb>) -> Self {
+		let inner: Rgb = Rgb::from(value);
+		let inner_converted: Lab = Lab::from(inner);
+
+		inner_converted.into()
 	}
 }
 
