@@ -3,11 +3,13 @@ use crate::math;
 use color_space::{Rgb, Lab};
 use std::ops::{Add, Mul};
 
-pub enum GradientKind {
+#[derive(Debug)]
+pub enum GradientColorSpace {
 	Rgb(Gradient<ColorVec<Rgb>>),
 	Lab(Gradient<ColorVec<Lab>>),
 }
 
+#[derive(Debug)]
 pub struct Gradient<T>
 where
 	T: Copy + Add<T, Output = T> + Mul<f64, Output = T>
@@ -16,7 +18,7 @@ where
 }
 
 #[derive(Debug, Clone, Copy)]
-struct GradientPoint<T>
+pub struct GradientPoint<T>
 where
 	T: Copy + Add<T, Output = T> + Mul<f64, Output = T>
 {
@@ -35,6 +37,60 @@ impl<T> Gradient<T>
 where
 	T: Copy + Add<T, Output = T> + Mul<f64, Output = T>
 {
+	pub fn new() -> Self {
+		Self {
+			points: Vec::new(),
+		}
+	}
+
+	/// Returns Some() on success and None if the pos is already taken
+	pub fn insert(&mut self, pos: f64, value: T) -> Option<()> {
+		let is_pos_free = self.points
+			.iter()
+			.all(|point| point.pos != pos);
+
+		if !is_pos_free {
+			return None;
+		}
+
+		let to_insert = GradientPoint { pos, value };
+
+		let idx = if self.points.len() == 0 {
+			0
+		} else if pos < self.points.first().unwrap().pos {
+			0
+		} else if pos > self.points.last().unwrap().pos {
+			self.points.len()
+		} else {
+			self.points
+				.windows(2)
+				.map(|pair| (pair[0], pair[1]))
+				.position(|(lower, upper)| {eprintln!("{} {}", lower.pos, upper.pos); lower.pos <= pos && pos <= upper.pos})
+				.unwrap() + 1 // shouldn't panic, as we're keeping self.points sorted by pos
+		};
+
+		self.points.insert(idx, to_insert);
+
+		Some(())
+	}
+
+	/// Returns None if none are missing, else - Some(0) or Some(1), depending on what edge point is missing
+	pub fn has_missing_edge_point(&self) -> Option<u8> {
+		if self.points.len() == 0 {
+			Some(0)
+		}
+
+		else if self.points.first().unwrap().pos != 0.0 {
+			Some(0)
+		}
+
+		else if self.points.last().unwrap().pos != 1.0 {
+			Some(1)
+		}
+
+		else { None }
+	}
+
 	fn get_interval(&self, pos: f64) -> Interval<T> {
 		let (lower_point, upper_point) = self.points
 			.windows(2)
@@ -64,6 +120,20 @@ impl Gradient<ColorVec<Rgb>> {
 
 		math::lerp(lower, upper, rel_pos).finish()
 	}
+
+	pub fn to_lab(self) -> Gradient<ColorVec<Lab>> {
+		let Gradient { points } = self;
+
+		let points: Vec<GradientPoint<ColorVec<Lab>>> = points
+			.into_iter()
+			.map(|point| GradientPoint {
+				pos: point.pos,
+				value: point.value.into(),
+			})
+			.collect();
+
+		Gradient { points }
+	}
 }
 
 impl Gradient<ColorVec<Lab>> {
@@ -78,56 +148,11 @@ impl Gradient<ColorVec<Lab>> {
 	}
 }
 
-impl GradientKind {
+impl GradientColorSpace {
 	pub fn get_at(&self, pos: f64) -> [u8; 3] {
 		match self {
-			GradientKind::Rgb(gradient) => gradient.get_at(pos),
-			GradientKind::Lab(gradient) => gradient.get_at(pos),
+			GradientColorSpace::Rgb(gradient) => gradient.get_at(pos),
+			GradientColorSpace::Lab(gradient) => gradient.get_at(pos),
 		}
-	}
-}
-
-
-// TO BE REMOVED:
-
-impl Gradient<ColorVec<Rgb>> {
-	pub fn test_new() -> Self {
-		let points: Vec<GradientPoint<ColorVec<Rgb>>> = vec![
-			GradientPoint {
-				pos: 0.0,
-				value: Rgb::from_hex(0xff00ff).into(),
-			},
-			GradientPoint {
-				pos: 0.5,
-				value: Rgb::from_hex(0x00ff00).into(),
-			},
-			GradientPoint {
-				pos: 1.0,
-				value: Rgb::from_hex(0x0000ff).into(),
-			},
-		];
-
-		Gradient { points: points }
-	}
-}
-
-impl Gradient<ColorVec<Lab>> {
-	pub fn test_new() -> Self {
-		let points: Vec<GradientPoint<ColorVec<Lab>>> = vec![
-			GradientPoint {
-				pos: 0.0,
-				value: Lab::from(Rgb::from_hex(0xff00ff)).into(),
-			},
-			GradientPoint {
-				pos: 0.5,
-				value: Lab::from(Rgb::from_hex(0x00ff00)).into(),
-			},
-			GradientPoint {
-				pos: 1.0,
-				value: Lab::from(Rgb::from_hex(0x0000ff)).into(),
-			},
-		];
-
-		Gradient { points: points }
 	}
 }

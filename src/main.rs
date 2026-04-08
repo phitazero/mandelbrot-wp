@@ -2,14 +2,16 @@ mod grid;
 mod math;
 mod image;
 mod cli;
+mod color_scheme;
 
 use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
 use cli::Cli;
+use color_scheme::ColorScheme;
 use num::complex::Complex64;
 use std::f64::consts::TAU;
-use math::{ColorVec, Gradient, ComplexPlaneView};
+use math::{ColorVec, ComplexPlaneView};
 
 /// The Julia variant stores the coefficient
 #[derive(Debug, Clone)]
@@ -31,8 +33,15 @@ fn main() {
 		zoom_iterations,
 		iterations,
 		julia,
+		color_scheme_options,
 		..
 	} = Cli::parse();
+
+	let color_scheme = ColorScheme::try_from(color_scheme_options)
+		.unwrap_or_else(|err| {
+			eprintln!("fatal: couldn't parse color scheme: {err}");
+			exit(1);
+		});
 
 	let n_zooms = rand::random_range(min_zooms..=max_zooms);
 
@@ -114,16 +123,9 @@ fn main() {
 			Box::new(create_file(&file))
 		};
 
-	let gradient = Gradient::<ColorVec::<color_space::Lab>>::test_new();
-
 	let grid = grid.map(|x_opt| {
-		x_opt.map_or(
-			[0, 0, 0],
-			|x| {
-				let t = math::inv_lerp(x as f64, min, max);
-				gradient.get_at(t)
-			},
-		)
+		let t_opt = x_opt.map(|x| math::inv_lerp(x as f64, min, max));
+		color_scheme.get_at(t_opt)
 	});
 
 	image::write_colored(writer, output_width, output_height, &grid);

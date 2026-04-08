@@ -1,4 +1,4 @@
-use clap::{Parser};
+use clap::{Parser, Args};
 
 #[derive(Debug, Parser)]
 #[command(disable_help_flag = true)] // to rebind help to -H
@@ -56,6 +56,31 @@ pub struct Cli {
 	#[arg(short = 'D', long)]
 	pub save_zoom_steps: bool,
 
+	#[command(flatten)]
+	pub color_scheme_options: ColorSchemeOptions,
+
 	#[arg(short = 'H', long = "help", action = clap::ArgAction::Help)]
 	_help: Option<bool>,
+}
+
+
+#[derive(Debug, Args)]
+pub struct ColorSchemeOptions {
+	/// list of RGB colors and positions belonging to [0, 1], separated with semicolons
+	/// # is omittable
+	/// it's neccessary to provide edge points: at 0 and 1
+	/// e. g. "0: #000000; 0.8: #ff77aa; 1: #ffffff"
+	#[arg(short = 'G', long, verbatim_doc_comment)]
+	#[arg(default_value = "0: #000000; 1: #ffffff")]
+	pub gradient: String,
+
+	/// color of the points belonging to the set
+	#[arg(short = 'S', long)]
+	#[arg(default_value = "000000")]
+	pub set_color: String,
+
+	/// color space to interpolate in
+	#[arg(short = 'C', long)]
+	#[arg(default_value = "rgb")]
+	pub color_space: crate::color_scheme::ColorSpace,
 }
