@@ -3,12 +3,16 @@ mod grid;
 mod math;
 mod image;
 mod cli;
+mod color;
+mod gradient;
 
 use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
+use color::ColorVec;
 use complex_plane_view::ComplexPlaneView;
 use cli::Cli;
+use gradient::Gradient;
 use num::complex::Complex64;
 use std::f64::consts::TAU;
 
@@ -115,14 +119,19 @@ fn main() {
 			Box::new(create_file(&file))
 		};
 
+	let gradient = Gradient::<ColorVec::<color_space::Lab>>::test_new();
+
 	let grid = grid.map(|x_opt| {
 		x_opt.map_or(
-			0.0,
-			|x| math::inv_lerp(x as f64, min, max),
+			[0, 0, 0],
+			|x| {
+				let t = math::inv_lerp(x as f64, min, max);
+				gradient.get_at(t)
+			},
 		)
 	});
 
-	image::write_grayscale(writer, output_width, output_height, &grid);
+	image::write_colored(writer, output_width, output_height, &grid);
 }
 
 fn create_file(path: &str) -> fs::File {

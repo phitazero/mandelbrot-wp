@@ -50,3 +50,28 @@ where
 		ColorType::L8.into(),
 	).unwrap();
 }
+
+pub fn write_colored<W>(
+	writer: W,
+	width: u16,
+	height: u16,
+	grid: &Grid<[u8; 3]>
+)
+where
+	W: Write
+{
+	let encoder = PngEncoder::new(writer);
+
+	let data: Vec<u8> = grid.data
+		.iter()
+		.flatten()
+		.copied()
+		.collect();
+
+	encoder.write_image(
+		&data,
+		width as u32,
+		height as u32,
+		ColorType::Rgb8.into(),
+	).unwrap();
+}
