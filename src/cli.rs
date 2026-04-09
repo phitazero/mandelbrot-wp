@@ -51,12 +51,12 @@ pub struct GenOptions {
 	pub zoom_factor: f64,
 
 	/// number of z² + c iterations when computing points to zoom into
-	#[arg(short = 'i', long)]
+	#[arg(short = 'n', long)]
 	#[arg(default_value_t = 100)]
 	pub zoom_iterations: u32,
 
 	/// number of z² + c iterations when computing final image
-	#[arg(short = 'I', long)]
+	#[arg(short = 'N', long)]
 	#[arg(default_value_t = 300)]
 	pub iterations: u32,
 
@@ -88,4 +88,9 @@ pub struct ColorSchemeOptions {
 	#[arg(short = 'C', long)]
 	#[arg(default_value = "rgb")]
 	pub color_space: crate::color_scheme::ColorSpace,
+
+	/// interpolation: linear or cubic smooth step (f' = 0 at each data point)
+	#[arg(short = 'I', long)]
+	#[arg(default_value = "linear")]
+	pub interpolation: crate::color_scheme::Interpolation,
 }

@@ -1,5 +1,6 @@
 use crate::math::{ColorVec, Gradient, GradientColorSpace};
 use crate::cli::ColorSchemeOptions;
+use crate::math;
 use color_space::Rgb;
 use core::fmt;
 use std::convert::TryFrom;
@@ -9,6 +10,7 @@ use std::error::Error;
 pub struct ColorScheme {
 	gradient: GradientColorSpace,
 	set_color: [u8; 3],
+	interpolation: Interpolation,
 }
 
 /// only for cli
@@ -16,6 +18,12 @@ pub struct ColorScheme {
 pub enum ColorSpace {
 	Rgb,
 	Lab,
+}
+
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+pub enum Interpolation {
+	Linear,
+	Cubic,
 }
 
 impl TryFrom<ColorSchemeOptions> for ColorScheme {
@@ -61,6 +69,7 @@ impl TryFrom<ColorSchemeOptions> for ColorScheme {
 		Ok(ColorScheme {
 			gradient: gradient_color_space,
 			set_color,
+			interpolation: options.interpolation,
 		})
 	}
 }
@@ -68,9 +77,12 @@ impl TryFrom<ColorSchemeOptions> for ColorScheme {
 impl ColorScheme {
 	// idk how to name the argument, i give up
 	pub fn get_at(&self, value_opt: Option<f64>) -> [u8; 3] {
-		match value_opt {
-			Some(value) => self.gradient.get_at(value),
-			None => self.set_color
+		let Some(value) = value_opt else { return self.set_color; };
+
+		match self.interpolation {
+			Interpolation::Linear => self.gradient.get_at(value),
+			Interpolation::Cubic =>
+				self.gradient.get_at(math::cubic_smooth_step(value)),
 		}
 	}
 }

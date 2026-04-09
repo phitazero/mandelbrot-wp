@@ -19,3 +19,7 @@ where
 {
 	start * (1.0 - t) + end * t
 }
+
+pub fn cubic_smooth_step(t: f64) -> f64 {
+	3.0 * t.powi(2) - 2.0 * t.powi(3)
+}
