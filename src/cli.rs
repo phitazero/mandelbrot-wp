@@ -6,6 +6,18 @@ pub struct Cli {
 	/// output file, - for stdout
 	pub file: String,
 
+	#[command(flatten)]
+	pub gen_options: GenOptions,
+
+	#[command(flatten)]
+	pub color_scheme_options: ColorSchemeOptions,
+
+	#[arg(short = 'H', long = "help", action = clap::ArgAction::Help)]
+	_help: Option<bool>,
+}
+
+#[derive(Debug, Args)]
+pub struct GenOptions {
 	/// side length of the zoom buffer (a square)
 	#[arg(short = 'b', long)]
 	#[arg(default_value_t = 360)]
@@ -54,15 +66,8 @@ pub struct Cli {
 
 	/// debug save zoom steps
 	#[arg(short = 'D', long)]
-	pub save_zoom_steps: bool,
-
-	#[command(flatten)]
-	pub color_scheme_options: ColorSchemeOptions,
-
-	#[arg(short = 'H', long = "help", action = clap::ArgAction::Help)]
-	_help: Option<bool>,
+	pub save_zoom_steps: bool,	
 }
-
 
 #[derive(Debug, Args)]
 pub struct ColorSchemeOptions {

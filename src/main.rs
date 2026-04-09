@@ -7,8 +7,9 @@ mod color_scheme;
 use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
-use cli::Cli;
+use cli::{Cli, GenOptions};
 use color_scheme::ColorScheme;
+use grid::Grid;
 use num::complex::Complex64;
 use std::f64::consts::TAU;
 use math::{ColorVec, ComplexPlaneView};
@@ -23,6 +24,53 @@ enum Mode {
 fn main() {
 	let Cli {
 		file,
+		gen_options,
+		color_scheme_options,
+		..
+	} = Cli::parse();
+
+	let color_scheme = ColorScheme::try_from(color_scheme_options)
+		.unwrap_or_else(|err| {
+			eprintln!("fatal: couldn't parse color scheme: {err}");
+			exit(1);
+		});
+
+	let grid = gen_iterations_grid(&gen_options);
+
+	let max = *grid.data
+		.iter()
+		.flatten()
+		.max()
+		.unwrap() as f64;
+
+	let min = *grid.data
+		.iter()
+		.flatten()
+		.min()
+		.unwrap() as f64;
+
+	let writer: Box<dyn io::Write> =
+		if file == "-" {
+			Box::new(io::stdout())
+		} else {
+			Box::new(create_file(&file))
+		};
+
+	let grid = grid.map(|x_opt| {
+		let t_opt = x_opt.map(|x| math::inv_lerp(x as f64, min, max));
+		color_scheme.get_at(t_opt)
+	});
+
+	image::write_colored(
+		writer,
+		gen_options.output_width,
+		gen_options.output_height,
+		&grid
+	);
+}
+
+fn gen_iterations_grid(gen_options: &GenOptions) -> Grid<Option<u32>> {
+	let GenOptions {
 		zoom_buffer_size,
 		output_width,
 		output_height,
@@ -33,15 +81,7 @@ fn main() {
 		zoom_iterations,
 		iterations,
 		julia,
-		color_scheme_options,
-		..
-	} = Cli::parse();
-
-	let color_scheme = ColorScheme::try_from(color_scheme_options)
-		.unwrap_or_else(|err| {
-			eprintln!("fatal: couldn't parse color scheme: {err}");
-			exit(1);
-		});
+	} = *gen_options;
 
 	let n_zooms = rand::random_range(min_zooms..=max_zooms);
 
@@ -96,39 +136,13 @@ fn main() {
 
 	let grid = plane_view.gen_grid();
 
-	let grid = match &mode {
+	match &mode {
 		Mode::Mandelbrot =>
 			grid.map(|z| math::julia::iterate(z, z, iterations)),
 
 		Mode::Julia(c) =>
 			grid.map(|z| math::julia::iterate(z, *c, iterations)),
-	};
-
-	let max = *grid.data
-		.iter()
-		.flatten()
-		.max()
-		.unwrap() as f64;
-
-	let min = *grid.data
-		.iter()
-		.flatten()
-		.min()
-		.unwrap() as f64;
-
-	let writer: Box<dyn io::Write> =
-		if file == "-" {
-			Box::new(io::stdout())
-		} else {
-			Box::new(create_file(&file))
-		};
-
-	let grid = grid.map(|x_opt| {
-		let t_opt = x_opt.map(|x| math::inv_lerp(x as f64, min, max));
-		color_scheme.get_at(t_opt)
-	});
-
-	image::write_colored(writer, output_width, output_height, &grid);
+	}
 }
 
 fn create_file(path: &str) -> fs::File {
