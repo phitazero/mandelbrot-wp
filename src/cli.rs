@@ -71,6 +71,22 @@ pub struct GenOptions {
 
 #[derive(Debug, Args)]
 pub struct ColorSchemeOptions {
+	#[command(flatten)]
+	pub color_spec: ColorSpec,
+
+	/// color space to interpolate in
+	#[arg(short = 'C', long)]
+	#[arg(default_value = "rgb")]
+	pub color_space: crate::color_scheme::ColorSpace,
+
+	/// interpolation: linear or cubic smooth step (f' = 0 at each data point)
+	#[arg(short = 'I', long)]
+	#[arg(default_value = "linear")]
+	pub interpolation: crate::color_scheme::Interpolation,
+}
+
+#[derive(Debug, Args, Clone)]
+pub struct ColorSpec {
 	/// list of RGB colors and positions belonging to [0, 1], separated with semicolons
 	/// # is omittable
 	/// it's neccessary to provide edge points: at 0 and 1
@@ -83,14 +99,4 @@ pub struct ColorSchemeOptions {
 	#[arg(short = 'S', long)]
 	#[arg(default_value = "000000")]
 	pub set_color: String,
-
-	/// color space to interpolate in
-	#[arg(short = 'C', long)]
-	#[arg(default_value = "rgb")]
-	pub color_space: crate::color_scheme::ColorSpace,
-
-	/// interpolation: linear or cubic smooth step (f' = 0 at each data point)
-	#[arg(short = 'I', long)]
-	#[arg(default_value = "linear")]
-	pub interpolation: crate::color_scheme::Interpolation,
 }

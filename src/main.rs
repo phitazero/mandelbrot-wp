@@ -3,6 +3,7 @@ mod math;
 mod image;
 mod cli;
 mod color_scheme;
+mod utils;
 
 use std::process::exit;
 use std::{fs, io};
