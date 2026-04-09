@@ -36,6 +36,10 @@ impl TryFrom<ColorSchemeOptions> for ColorScheme {
 			let pos: f64 = pos_str.trim().parse()
 				.map_err(|_| GradientParseError::ParseFloatError(pos_str.to_string()))?;
 
+			if pos < 0.0 || pos > 1.0 {
+				return Err(Box::new(GradientParseError::PointOutOfBounds(pos)));
+			}
+
 			let color_vec = parse_hex_color(color_str.trim())?;
 
 			let opt = gradient.insert(pos, color_vec);
@@ -118,6 +122,7 @@ enum GradientParseError {
 	DuplicatePoint(f64),
 	ParseFloatError(String),
 	PositionedColorFormat(String),
+	PointOutOfBounds(f64),
 }
 
 impl Error for GradientParseError {}
@@ -134,7 +139,10 @@ impl fmt::Display for GradientParseError {
 				write!(f, "couldn't parse '{float_str}' as float64"),
 
 			GradientParseError::PositionedColorFormat(string) =>
-				write!(f, "can't parse '{string}' as a pair of position and color. Expected 'POS: COLOR'")
+				write!(f, "can't parse '{string}' as a pair of position and color. Expected 'POS: COLOR'"),
+
+			GradientParseError::PointOutOfBounds(pos) =>
+				write!(f, "can't place a color point at {pos}, out of bounds [0, 1]"),
 		}
 	}
 }
