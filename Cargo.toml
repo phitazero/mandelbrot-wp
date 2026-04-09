@@ -9,3 +9,4 @@ color_space = "0.5.4"
 image_crate = { package = "image", version = "0.25.10", default-features = false, features = ["png"] }
 num = "0.4.3"
 rand = "0.10.0"
+rayon = "1.11.0"

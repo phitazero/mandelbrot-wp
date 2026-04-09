@@ -139,10 +139,10 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Grid<Option<u32>> {
 
 	match &mode {
 		Mode::Mandelbrot =>
-			grid.map(|z| math::julia::iterate(z, z, iterations)),
+			grid.par_map(|z| math::julia::iterate(z, z, iterations)),
 
 		Mode::Julia(c) =>
-			grid.map(|z| math::julia::iterate(z, *c, iterations)),
+			grid.par_map(|z| math::julia::iterate(z, *c, iterations)),
 	}
 }
 

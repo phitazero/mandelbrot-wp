@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 #[derive(Debug)]
 pub struct Grid<T>  {
 	pub width: u16,
@@ -46,6 +48,23 @@ impl<T> Grid<T>{
 
 		let mapped_data = data
 			.into_iter()
+			.map(|item| f(item))
+			.collect::<Vec<B>>()
+			.into_boxed_slice();
+
+		Grid { width, height, data: mapped_data }
+	}
+
+	pub fn par_map<F, B>(self, f: F) -> Grid<B>
+	where
+		F: Fn(T) -> B + std::marker::Sync,
+		B: Send,
+		Box<[T]>: IntoParallelIterator<Item = T>,
+	{
+		let Grid { width, height, data } = self;
+
+		let mapped_data = data
+			.into_par_iter()
 			.map(|item| f(item))
 			.collect::<Vec<B>>()
 			.into_boxed_slice();
