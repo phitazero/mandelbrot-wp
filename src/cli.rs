@@ -1,19 +1,27 @@
-use clap::{Parser, Args};
+use clap::{Parser, Args, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(disable_help_flag = true)] // to rebind help to -H
 pub struct Cli {
+	#[command(subcommand)]
+	pub subcommand: Command,
+
 	/// output file, - for stdout
 	pub file: String,
+}
 
+#[derive(Debug, Subcommand)]
+pub enum Command {
+	Generate(SubcommandGenerateArgs),
+}
+
+#[derive(Args, Debug)]
+pub struct SubcommandGenerateArgs {
 	#[command(flatten)]
 	pub gen_options: GenOptions,
 
 	#[command(flatten)]
 	pub color_scheme_options: ColorSchemeOptions,
-
-	#[arg(short = 'H', long = "help", action = clap::ArgAction::Help)]
-	_help: Option<bool>,
 }
 
 #[derive(Debug, Args)]

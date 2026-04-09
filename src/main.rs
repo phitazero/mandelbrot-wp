@@ -8,7 +8,7 @@ mod utils;
 use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
-use cli::{Cli, GenOptions};
+use cli::{Cli, GenOptions, Command};
 use color_scheme::ColorScheme;
 use grid::Grid;
 use num::complex::Complex64;
@@ -23,12 +23,26 @@ enum Mode {
 }
 
 fn main() {
+	Cli::parse();
+
 	let Cli {
 		file,
+		subcommand,
+	} = Cli::parse();
+
+	match subcommand {
+		Command::Generate(args) => subcommand_generate(file, args),
+	}
+}
+
+fn subcommand_generate(
+	file: String,
+	args: cli::SubcommandGenerateArgs,
+) {
+	let cli::SubcommandGenerateArgs {
 		gen_options,
 		color_scheme_options,
-		..
-	} = Cli::parse();
+	} = args;
 
 	let color_scheme = ColorScheme::try_from(color_scheme_options)
 		.unwrap_or_else(|err| {
