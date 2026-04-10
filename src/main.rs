@@ -161,7 +161,8 @@ fn subcommand_generate(
 		});
 
 	let grid = gen_iterations_grid(&gen_options)
-		.map_some(|n| n as f64);
+		.map_some(|n| n as f64)
+		.map_some(|x| f64::log2(x + 1.0));
 
 	let max = grid.data
 		.iter()
