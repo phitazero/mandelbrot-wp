@@ -6,13 +6,15 @@ use std::ops::{Add, Mul};
 use std::str::FromStr;
 use std::fmt;
 
+pub type GradientRgb = Gradient<ColorVec<Rgb>>;
+
 #[derive(Debug)]
 pub enum GradientColorSpace {
 	Rgb(Gradient<ColorVec<Rgb>>),
 	Lab(Gradient<ColorVec<Lab>>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Gradient<T>
 where
 	T: Copy + Add<T, Output = T> + Mul<f64, Output = T>
@@ -160,7 +162,7 @@ impl GradientColorSpace {
 	}
 }
 
-impl FromStr for Gradient<ColorVec<Rgb>> {
+impl FromStr for GradientRgb {
 	type Err = GradientParseError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
