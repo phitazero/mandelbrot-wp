@@ -1,4 +1,4 @@
-use clap::{Parser, Args, Subcommand};
+use clap::{Parser, Args, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
 #[command(disable_help_flag = true)] // to rebind help to -H
@@ -13,6 +13,7 @@ pub struct Cli {
 #[derive(Debug, Subcommand)]
 pub enum Command {
 	Generate(SubcommandGenerateArgs),
+	Gradient(SubcommandGradientArgs),
 }
 
 #[derive(Args, Debug)]
@@ -22,6 +23,28 @@ pub struct SubcommandGenerateArgs {
 
 	#[command(flatten)]
 	pub color_scheme_options: ColorSchemeOptions,
+}
+
+
+#[derive(Args, Debug)]
+pub struct SubcommandGradientArgs {
+	/// layout the gradients are arrenged in
+	/// color-space - easier to compare color spaces:
+	/// RGB,linear; LAB,linear; RGB,cubic; LAB,cubic
+	/// interpolation - easier to compare interpolations:
+	/// RGB,linear; RGB,cubic; LAB,linear; LAB,cubic
+	#[arg(short = 'l', long, verbatim_doc_comment)]
+	#[arg(default_value = "color-space")]
+	pub layout: GradientCompareLayout,
+
+	#[command(flatten)]
+	pub color_spec: ColorSpec,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum GradientCompareLayout {
+	ColorSpace,
+	Interpolation,
 }
 
 #[derive(Debug, Args)]

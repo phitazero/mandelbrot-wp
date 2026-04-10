@@ -3,7 +3,7 @@ mod color;
 mod complex_plane_view;
 pub mod julia;
 
-pub use gradient::{Gradient, GradientColorSpace, GradientRgb};
+pub use gradient::{GradientColorSpace, GradientRgb};
 pub use color::ColorVec;
 pub use complex_plane_view::ComplexPlaneView;
 

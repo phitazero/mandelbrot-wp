@@ -9,7 +9,7 @@ use std::process::exit;
 use std::{fs, io};
 use clap::Parser;
 use cli::{Cli, GenOptions, Command};
-use color_scheme::ColorScheme;
+use color_scheme::{ColorScheme, Colors};
 use grid::Grid;
 use num::complex::Complex64;
 use std::f64::consts::TAU;
@@ -30,13 +30,123 @@ fn main() {
 		subcommand,
 	} = Cli::parse();
 
+	let writer = output_writer(&file);
+
 	match subcommand {
-		Command::Generate(args) => subcommand_generate(file, args),
+		Command::Generate(args) => subcommand_generate(writer, args),
+		Command::Gradient(args) => subcommand_gradient(writer, args),
 	}
 }
 
+fn output_writer(file: &str) -> Box<dyn io::Write> {
+	if file == "-" {
+		Box::new(io::stdout())
+	} else {
+		Box::new(create_file(&file))
+	}
+}
+
+fn subcommand_gradient(
+	writer: Box<dyn io::Write>,
+	args: cli::SubcommandGradientArgs,
+) {
+	let cli::SubcommandGradientArgs {
+		color_spec,
+		layout,
+	} = args;
+
+	let colors = Colors::try_from(color_spec)
+		.unwrap_or_else(|err| {
+			eprintln!("fatal: couldn't parse colors: {err}");
+			exit(1);
+		});
+
+	let scheme_lin_rgb = ColorScheme::from_colors(
+		colors.clone(),
+		color_scheme::ColorSpace::Rgb,
+		color_scheme::Interpolation::Linear,
+	);
+
+	let scheme_lin_lab = ColorScheme::from_colors(
+		colors.clone(),
+		color_scheme::ColorSpace::Lab,
+		color_scheme::Interpolation::Linear,
+	);
+
+	let scheme_cub_rgb = ColorScheme::from_colors(
+		colors.clone(),
+		color_scheme::ColorSpace::Rgb,
+		color_scheme::Interpolation::Cubic,
+	);
+
+	let scheme_cub_lab = ColorScheme::from_colors(
+		colors,
+		color_scheme::ColorSpace::Lab,
+		color_scheme::Interpolation::Cubic,
+	);
+
+	const SET_COLOR_WIDTH: u16 = 100;
+	const GRADIENT_WIDTH: u16 = 500;
+	const GRADIENT_HEIGHT: u16 = 175;
+
+	const GRADIENT_HEIGHT_0: u16 = 0;
+	const GRADIENT_HEIGHT_1: u16 = GRADIENT_HEIGHT;
+	const GRADIENT_HEIGHT_2: u16 = GRADIENT_HEIGHT * 2;
+	const GRADIENT_HEIGHT_3: u16 = GRADIENT_HEIGHT * 3;
+
+	let grid = Grid::new(
+		GRADIENT_WIDTH + SET_COLOR_WIDTH,
+		4 * GRADIENT_HEIGHT,
+		|x, y| {
+			if x <= GRADIENT_WIDTH {
+				let t = Some(x as f64 / GRADIENT_WIDTH as f64);
+
+				match layout {
+					cli::GradientCompareLayout::ColorSpace =>
+						match y {
+							GRADIENT_HEIGHT_0..GRADIENT_HEIGHT_1 =>
+								&scheme_lin_rgb,
+
+							GRADIENT_HEIGHT_1..GRADIENT_HEIGHT_2 =>
+								&scheme_lin_lab,
+
+							GRADIENT_HEIGHT_2..GRADIENT_HEIGHT_3 =>
+								&scheme_cub_rgb,
+
+							_ => &scheme_cub_lab,
+						}
+
+					cli::GradientCompareLayout::Interpolation =>
+						match y {
+							GRADIENT_HEIGHT_0..GRADIENT_HEIGHT_1 =>
+								&scheme_lin_rgb,
+
+							GRADIENT_HEIGHT_1..GRADIENT_HEIGHT_2 =>
+								&scheme_cub_rgb,
+
+							GRADIENT_HEIGHT_2..GRADIENT_HEIGHT_3 =>
+								&scheme_lin_lab,
+
+							_ => &scheme_cub_lab,
+						}
+				}.get_at(t)
+
+			} else {
+				scheme_lin_rgb.get_at(None)
+			}
+		}
+	);
+
+	image::write_colored(
+		writer,
+		GRADIENT_WIDTH + SET_COLOR_WIDTH,
+		4 * GRADIENT_HEIGHT,
+		&grid
+	);
+}
+
 fn subcommand_generate(
-	file: String,
+	writer: Box<dyn io::Write>,
 	args: cli::SubcommandGenerateArgs,
 ) {
 	let cli::SubcommandGenerateArgs {
@@ -63,13 +173,6 @@ fn subcommand_generate(
 		.flatten()
 		.min()
 		.unwrap() as f64;
-
-	let writer: Box<dyn io::Write> =
-		if file == "-" {
-			Box::new(io::stdout())
-		} else {
-			Box::new(create_file(&file))
-		};
 
 	let grid = grid.map(|x_opt| {
 		let t_opt = x_opt.map(|x| math::inv_lerp(x as f64, min, max));
