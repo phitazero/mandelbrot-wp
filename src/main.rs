@@ -160,24 +160,25 @@ fn subcommand_generate(
 			exit(1);
 		});
 
-	let grid = gen_iterations_grid(&gen_options);
+	let grid = gen_iterations_grid(&gen_options)
+		.map_some(|n| n as f64);
 
-	let max = *grid.data
+	let max = grid.data
 		.iter()
 		.flatten()
-		.max()
-		.unwrap() as f64;
+		.copied()
+		.reduce(f64::max)
+		.unwrap();
 
-	let min = *grid.data
+	let min = grid.data
 		.iter()
 		.flatten()
-		.min()
-		.unwrap() as f64;
+		.copied()
+		.reduce(f64::min)
+		.unwrap();
 
-	let grid = grid.map(|x_opt| {
-		let t_opt = x_opt.map(|x| math::inv_lerp(x as f64, min, max));
-		color_scheme.get_at(t_opt)
-	});
+	let grid = grid.map_some(|x| math::inv_lerp(x, min, max))
+		.map(|x_opt| color_scheme.get_at(x_opt));
 
 	image::write_colored(
 		writer,

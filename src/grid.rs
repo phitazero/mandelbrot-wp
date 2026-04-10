@@ -72,3 +72,12 @@ impl<T> Grid<T>{
 		Grid { width, height, data: mapped_data }
 	}
 }
+
+impl<T> Grid<Option<T>> {
+	pub fn map_some<F, B>(self, f: F) -> Grid<Option<B>>
+	where
+		F: Fn(T) -> B,
+	{
+		self.map(|value_opt| value_opt.map(&f))
+	}
+}
