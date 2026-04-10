@@ -70,7 +70,7 @@ where
 			self.points
 				.windows(2)
 				.map(|pair| (pair[0], pair[1]))
-				.position(|(lower, upper)| {eprintln!("{} {}", lower.pos, upper.pos); lower.pos <= pos && pos <= upper.pos})
+				.position(|(lower, upper)| lower.pos <= pos && pos <= upper.pos)
 				.unwrap() + 1 // shouldn't panic, as we're keeping self.points sorted by pos
 		};
 

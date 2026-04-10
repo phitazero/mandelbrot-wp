@@ -23,8 +23,6 @@ enum Mode {
 }
 
 fn main() {
-	Cli::parse();
-
 	let Cli {
 		file,
 		subcommand,
