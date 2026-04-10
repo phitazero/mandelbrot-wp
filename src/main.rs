@@ -160,8 +160,23 @@ fn subcommand_generate(
 			exit(1);
 		});
 
-	let grid = gen_iterations_grid(&gen_options)
-		.map_some(|n| n as f64)
+	const N_MISSES_ALLOWED: u8 = 5;
+
+	let grid = (|| {
+		for _ in 0..N_MISSES_ALLOWED {
+			if let Some(grid) = gen_iterations_grid(&gen_options) {
+				return grid;
+			}
+
+			eprintln!("Miss!")
+		}
+
+		eprintln!("fatal: couldn't locate any points in set after {N_MISSES_ALLOWED} attempts");
+		eprintln!("may be cause by a low zoom buffer size");
+		exit(1);
+	})();
+
+	let grid = grid.map_some(|n| n as f64)
 		.map_some(|x| f64::log2(x + 1.0));
 
 	let max = grid.data
@@ -189,7 +204,7 @@ fn subcommand_generate(
 	);
 }
 
-fn gen_iterations_grid(gen_options: &GenOptions) -> Grid<Option<u32>> {
+fn gen_iterations_grid(gen_options: &GenOptions) -> Option<Grid<Option<u32>>> {
 	let GenOptions {
 		zoom_buffer_size,
 		output_width,
@@ -241,8 +256,7 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Grid<Option<u32>> {
 			);
 		}
 
-		let (x, y) = math::julia::pick_border_point(&grid)
-			.expect("no border points");
+		let (x, y) = math::julia::pick_border_point(&grid)?;
 
 		plane_view.center = plane_view.xy_to_point(x, y);
 
@@ -256,13 +270,15 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Grid<Option<u32>> {
 
 	let grid = plane_view.gen_grid();
 
-	match &mode {
+	let grid = match &mode {
 		Mode::Mandelbrot =>
 			grid.par_map(|z| math::julia::iterate(z, z, iterations)),
 
 		Mode::Julia(c) =>
 			grid.par_map(|z| math::julia::iterate(z, *c, iterations)),
-	}
+	};
+
+	Some(grid)
 }
 
 fn create_file(path: &str) -> fs::File {
