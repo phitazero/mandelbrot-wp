@@ -47,25 +47,32 @@ pub fn generate(
 		exit(1);
 	})();
 
-	let grid = grid.map_some(|n| n as f64)
+	let mut grid = grid.map_some(|n| n as f64)
 		.map_some(|x| f64::log2(x + 1.0));
 
-	let max = grid.data
+	let has_points_outside = grid.data
 		.iter()
-		.flatten()
-		.copied()
-		.reduce(f64::max)
-		.unwrap();
+		.any(|opt| opt.is_some());
 
-	let min = grid.data
-		.iter()
-		.flatten()
-		.copied()
-		.reduce(f64::min)
-		.unwrap();
+	if has_points_outside {
+		let max = grid.data
+			.iter()
+			.flatten()
+			.copied()
+			.reduce(f64::max)
+			.unwrap();
 
-	let grid = grid.map_some(|x| math::inv_lerp(x, min, max))
-		.map(|x_opt| color_scheme.get_at(x_opt));
+		let min = grid.data
+			.iter()
+			.flatten()
+			.copied()
+			.reduce(f64::min)
+			.unwrap();
+
+		grid = grid.map_some(|x| math::inv_lerp(x, min, max));
+	}
+
+	let grid = grid.map(|x_opt| color_scheme.get_at(x_opt));
 
 	image::write_colored(
 		writer,
