@@ -1,16 +1,17 @@
 use crate::color_scheme::ColorScheme;
-use crate::cli::{self, GenOptions};
+use crate::cli::{self, GenOptions, Mode};
 use crate::math::{self, ComplexPlaneView};
 use crate::grid::Grid;
 use crate::image;
 use num::complex::Complex64;
+use rand::seq::IndexedRandom;
 use std::process::exit;
 use std::f64::consts::TAU;
 use std::io;
 
 /// The Julia variant stores the coefficient
-#[derive(Debug, Clone)]
-enum Mode {
+#[derive(Debug, Clone, Copy)]
+enum SetKind {
 	Mandelbrot,
 	Julia(Complex64),
 }
@@ -85,33 +86,21 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Option<Grid<Option<u32>>> {
 		save_zoom_steps,
 		zoom_iterations,
 		iterations,
-		julia,
+		mode,
 	} = *gen_options;
 
 	let n_zooms = rand::random_range(min_zooms..=max_zooms);
 
-	let mut plane_view;
-	let mode;
-
-	if julia {
-		plane_view = ComplexPlaneView::initial_julia(zoom_buffer_size);
-
-		let c = math::julia::gen_julia_coefficient(zoom_buffer_size, zoom_iterations);
-		mode = Mode::Julia(c);
-
-	} else {
-		plane_view = ComplexPlaneView::initial_mandelbrot(zoom_buffer_size);
-		mode = Mode::Mandelbrot;
-	}
+	let (mut plane_view, set_kind) = initials(gen_options, mode);
 
 	for i in 0..n_zooms {
 		let grid = plane_view.gen_grid();
 
-		let grid = match &mode {
-			Mode::Mandelbrot =>
+		let grid = match &set_kind {
+			SetKind::Mandelbrot =>
 				grid.map(|z| math::julia::iterate_bool(z, z, zoom_iterations)),
 
-			Mode::Julia(c) =>
+			SetKind::Julia(c) =>
 				grid.map(|z| math::julia::iterate_bool(z, *c, zoom_iterations)),
 		};
 
@@ -142,13 +131,52 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Option<Grid<Option<u32>>> {
 
 	let grid = plane_view.gen_grid();
 
-	let grid = match &mode {
-		Mode::Mandelbrot =>
+	let grid = match &set_kind {
+		SetKind::Mandelbrot =>
 			grid.par_map(|z| math::julia::iterate(z, z, iterations)),
 
-		Mode::Julia(c) =>
+		SetKind::Julia(c) =>
 			grid.par_map(|z| math::julia::iterate(z, *c, iterations)),
 	};
 
 	Some(grid)
+}
+
+fn initials(gen_options: &GenOptions, mode: Mode) -> (ComplexPlaneView, SetKind) {
+	let GenOptions {
+		zoom_buffer_size,
+		zoom_iterations,
+		..
+	} = *gen_options;
+
+	match mode {
+		Mode::Mandelbrot => {
+			let plane_view = ComplexPlaneView::initial_mandelbrot(zoom_buffer_size);
+			let set_kind = SetKind::Mandelbrot;
+
+			(plane_view, set_kind)
+		},
+		Mode::Julia => {
+			let plane_view = ComplexPlaneView::initial_julia(zoom_buffer_size);
+
+			let c = math::julia::gen_julia_coefficient(
+				zoom_buffer_size,
+				zoom_iterations,
+			);
+
+			let set_kind = SetKind::Julia(c);
+
+			(plane_view, set_kind)
+		},
+		Mode::Random => {
+			let mode = [
+				Mode::Mandelbrot,
+				Mode::Julia
+			].choose(&mut rand::rng())
+				.copied()
+				.unwrap();
+
+			initials(gen_options, mode)
+		}
+	}
 }

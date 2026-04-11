@@ -91,13 +91,21 @@ pub struct GenOptions {
 	#[arg(default_value_t = 300)]
 	pub iterations: u32,
 
-	/// instead of Mandelbrot, generate a Julia set
-	#[arg(short = 'J', long)]
-	pub julia: bool,
+	/// fractal to use (random means select randomly, not random noise)
+	#[arg(short = 'g', long)]
+	#[arg(default_value = "mandelbrot")]
+	pub mode: Mode,
 
 	/// debug save zoom steps
 	#[arg(short = 'D', long)]
 	pub save_zoom_steps: bool,	
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum Mode {
+	Mandelbrot,
+	Julia,
+	Random,
 }
 
 #[derive(Debug, Args)]
