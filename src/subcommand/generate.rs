@@ -43,7 +43,7 @@ pub fn generate(
 		}
 
 		eprintln!("fatal: couldn't locate any points in set after {N_MISSES_ALLOWED} attempts");
-		eprintln!("may be cause by a low zoom buffer size");
+		eprintln!("may be caused by a low zoom buffer size");
 		exit(1);
 	})();
 
