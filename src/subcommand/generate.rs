@@ -1,20 +1,13 @@
 use crate::color_scheme::ColorScheme;
 use crate::cli::{self, GenOptions, Mode};
 use crate::math::{self, ComplexPlaneView};
+use crate::math::julia::SetKind;
 use crate::grid::Grid;
-use crate::image;
-use num::complex::Complex64;
+use crate::{image, utils};
 use rand::seq::IndexedRandom;
 use std::process::exit;
 use std::f64::consts::TAU;
 use std::io;
-
-/// The Julia variant stores the coefficient
-#[derive(Debug, Clone, Copy)]
-enum SetKind {
-	Mandelbrot,
-	Julia(Complex64),
-}
 
 pub fn generate(
 	writer: Box<dyn io::Write>,
@@ -101,27 +94,12 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Option<Grid<Option<u32>>> {
 	let (mut plane_view, set_kind) = initials(gen_options, mode);
 
 	for i in 0..n_zooms {
-		let grid = plane_view.gen_grid();
-
-		let grid = match &set_kind {
-			SetKind::Mandelbrot =>
-				grid.map(|z| math::julia::iterate_bool(z, z, zoom_iterations)),
-
-			SetKind::Julia(c) =>
-				grid.map(|z| math::julia::iterate_bool(z, *c, zoom_iterations)),
-		};
+		let grid = plane_view
+			.gen_grid()
+			.par_map(|z| math::julia::iterate_bool(set_kind, z, zoom_iterations));
 
 		if save_zoom_steps {
-			let file = crate::create_file(
-				&format!("mandelbrot_zoom_iteration_{i}.png")
-			);
-
-			image::write_monochrome(
-				file,
-				zoom_buffer_size,
-				zoom_buffer_size,
-				&grid,
-			);
+			utils::save_zoom_step(&grid, zoom_buffer_size, i);
 		}
 
 		let (x, y) = math::julia::pick_border_point(&grid)?;
@@ -136,18 +114,14 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Option<Grid<Option<u32>>> {
 	plane_view.width = output_width;
 	plane_view.height = output_height;
 
-	let grid = plane_view.gen_grid();
-
-	let grid = match &set_kind {
-		SetKind::Mandelbrot =>
-			grid.par_map(|z| math::julia::iterate(z, z, iterations)),
-
-		SetKind::Julia(c) =>
-			grid.par_map(|z| math::julia::iterate(z, *c, iterations)),
-	};
+	let grid = plane_view
+		.gen_grid()
+		.par_map(|z| math::julia::iterate(set_kind, z, iterations));
 
 	Some(grid)
 }
+
+
 
 fn initials(gen_options: &GenOptions, mode: Mode) -> (ComplexPlaneView, SetKind) {
 	let GenOptions {

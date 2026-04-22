@@ -1,7 +1,9 @@
+use crate::grid::Grid;
 use crate::math::ColorVec;
+use crate::image;
 use color_space::Rgb;
 use std::error::Error;
-use std::fmt;
+use std::{fmt, fs};
 
 #[derive(Debug)]
 pub struct ParseColorError {
@@ -44,3 +46,27 @@ impl ParseColorError {
 	}
 }
 
+pub fn create_file(path: &str) -> fs::File {
+	fs::File::create(path)
+		.unwrap_or_else(|err| {
+			eprintln!("fatal: couldn't create/open {path}: {err}");
+			std::process::exit(1);
+		})
+}
+
+pub fn save_zoom_step(
+	grid: &Grid<bool>,
+	zoom_buffer_size: u16,
+	i: u8,
+) {
+	let file = create_file(
+		&format!("mandelbrot_zoom_iteration_{i}.png")
+	);
+
+	image::write_monochrome(
+		file,
+		zoom_buffer_size,
+		zoom_buffer_size,
+		&grid,
+	);
+}

@@ -3,8 +3,27 @@ use crate::ComplexPlaneView;
 use num::complex::Complex64;
 use rand::seq::IndexedRandom;
 
+/// The Julia variant stores the coefficient
+#[derive(Debug, Clone, Copy)]
+pub enum SetKind {
+	Mandelbrot,
+	Julia(Complex64),
+}
+
+impl SetKind {
+	/// Takes a z value and returns c (used in z² + c): z itself for Mandelbrot,
+    pub fn c_for(self, z: Complex64) -> Complex64 {
+	    match self {
+			SetKind::Mandelbrot => z,
+			SetKind::Julia(c) => c,
+		}
+    }
+}
+
 /// Returns the number of iterations the point has passed before going to infinity, or None if belongs to the set
-pub fn iterate(mut z: Complex64, c: Complex64, n: u32) -> Option<u32> {
+pub fn iterate(set: SetKind, mut z: Complex64, n: u32) -> Option<u32> {
+	let c = set.c_for(z);
+
 	for i in 0..n {
 		if z.norm_sqr() > 4.0 {
 			return Some(i);
@@ -17,10 +36,12 @@ pub fn iterate(mut z: Complex64, c: Complex64, n: u32) -> Option<u32> {
 }
 
 /// Returns true if the point belongs to the set (after n iterations), else false
-pub fn iterate_bool(mut z: Complex64, c: Complex64, n: u32) -> bool {
+pub fn iterate_bool(set: SetKind, mut z: Complex64, n: u32) -> bool {
 	if z.norm_sqr() > 4.0 {
 		return false
 	}
+
+	let c = set.c_for(z);
 
 	for _ in 0..n {
 		z = z * z + c;
@@ -66,7 +87,7 @@ pub fn gen_julia_coefficient(zoom_buffer_size: u16, zoom_iterations: u32) -> Com
 
 	let grid = plane_view
 		.gen_grid()
-		.map(|z| iterate_bool(z, z, zoom_iterations));
+		.map(|z| iterate_bool(SetKind::Mandelbrot, z, zoom_iterations));
 
 	let (x, y) = pick_border_point(&grid)
 			.expect("no border points");
