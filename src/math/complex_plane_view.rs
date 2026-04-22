@@ -1,5 +1,6 @@
 use num::complex::Complex64;
 use crate::grid::Grid;
+use crate::math::julia::SetKind;
 
 pub struct ComplexPlaneView {
 	pub center: Complex64,
@@ -64,6 +65,16 @@ impl ComplexPlaneView {
 			rotation: 0.0,
 			width: zoom_buffer_size,
 			height: zoom_buffer_size,
+		}
+	}
+
+	pub fn initial(set: SetKind, zoom_buffer_size: u16) -> Self {
+		match set {
+			SetKind::Mandelbrot =>
+				Self::initial_mandelbrot(zoom_buffer_size),
+
+			SetKind::Julia(_) =>
+				Self::initial_julia(zoom_buffer_size),
 		}
 	}
 }
