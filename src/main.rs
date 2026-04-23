@@ -5,6 +5,7 @@ mod cli;
 mod color_scheme;
 mod utils;
 mod subcommand;
+mod seed;
 
 use std::io;
 use clap::Parser;

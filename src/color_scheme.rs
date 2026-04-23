@@ -29,10 +29,10 @@ pub enum Interpolation {
 	Cubic,
 }
 
-impl TryFrom<ColorSchemeOptions> for ColorScheme {
+impl TryFrom<&ColorSchemeOptions> for ColorScheme {
 	type Error = Box<dyn Error>;
 
-	fn try_from(options: ColorSchemeOptions) -> Result<Self, Self::Error> {
+	fn try_from(options: &ColorSchemeOptions) -> Result<Self, Self::Error> {
 		let ColorSchemeOptions {
 			color_spec,
 			color_space,
@@ -49,7 +49,7 @@ impl TryFrom<ColorSchemeOptions> for ColorScheme {
 		Ok(ColorScheme {
 			gradient: gradient_color_space,
 			set_color: colors.set_color,
-			interpolation,
+			interpolation: *interpolation,
 		})
 	}
 }
@@ -86,10 +86,10 @@ impl ColorScheme {
 	}
 }
 
-impl TryFrom<ColorSpec> for Colors {
+impl TryFrom<&ColorSpec> for Colors {
 	type Error = Box<dyn Error>;
 
-	fn try_from(color_spec: ColorSpec) -> Result<Self, Self::Error> {
+	fn try_from(color_spec: &ColorSpec) -> Result<Self, Self::Error> {
 		let set_color = utils::parse_hex_color(&color_spec.set_color)?.finish();
 
 		let gradient: GradientRgb = color_spec.gradient.parse()?;

@@ -4,9 +4,10 @@ use crate::ComplexPlaneView;
 use crate::utils;
 use num::complex::Complex64;
 use rand::seq::IndexedRandom;
+use serde::{Deserialize, Serialize};
 
 /// The Julia variant stores the coefficient
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum SetKind {
 	Mandelbrot,
 	Julia(Complex64),

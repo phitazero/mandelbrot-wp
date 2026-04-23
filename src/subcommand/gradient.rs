@@ -13,7 +13,7 @@ pub fn gradient(
 		layout,
 	} = args;
 
-	let colors = Colors::try_from(color_spec)
+	let colors = Colors::try_from(&color_spec)
 		.unwrap_or_else(|err| {
 			eprintln!("fatal: couldn't parse colors: {err}");
 			exit(1);
