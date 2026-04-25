@@ -1,11 +1,13 @@
 use crate::math::julia::SetKind;
 use num::complex::Complex64;
 use serde::{Deserialize, Serialize};
+use chrono::{Local, DateTime};
 use std::error::Error;
 use std::fs;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Seed {
+	pub created_at: DateTime<Local>,
 	pub width: u16,
 	pub height: u16,
 	pub center: Complex64,
@@ -23,16 +25,11 @@ impl Seed {
 	pub fn save(&self) -> Result<(), Box<dyn Error>> {
 		let json_string = serde_json::to_string_pretty(self)?;
 
-		let timestamp_string = chrono::Local::now()
-			.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
-
 		let mut hasher = blake3::Hasher::new();
 		hasher.update(json_string.as_bytes());
-		hasher.update(timestamp_string.as_bytes());
 
-		let id = &hasher.finalize().to_hex()[..16];
-		
-		let filename = format!("{timestamp_string}-{id}.json");
+		let hash_string = &hasher.finalize().to_hex()[..16];
+		let filename = format!("{hash_string}.json");
 
 		let seed_cache_dir = dirs::cache_dir()
 			.ok_or_else(|| String::from("couldn't find cache dir"))?

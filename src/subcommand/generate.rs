@@ -42,6 +42,7 @@ pub fn generate(
 	})();
 
 	let seed = Seed {
+		created_at: chrono::Local::now(),
 		width: gen_options.output_width,
 		height: gen_options.output_height,
 		center: grid_gen_result.center,
