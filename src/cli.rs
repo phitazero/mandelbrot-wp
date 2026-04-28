@@ -5,9 +5,6 @@ use clap::{Parser, Args, Subcommand, ValueEnum};
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Command,
-
-	/// output file, - for stdout
-	pub file: String,
 }
 
 #[derive(Debug, Subcommand)]
@@ -18,6 +15,9 @@ pub enum Command {
 
 #[derive(Args, Debug)]
 pub struct SubcommandGenerateArgs {
+	/// output file, - for stdout
+	pub file: String,
+
 	#[command(flatten)]
 	pub gen_options: GenOptions,
 
@@ -28,6 +28,9 @@ pub struct SubcommandGenerateArgs {
 
 #[derive(Args, Debug)]
 pub struct SubcommandGradientArgs {
+	/// output file, - for stdout
+	pub file: String,
+
 	/// layout the gradients are arrenged in
 	/// color-space - easier to compare color spaces:
 	/// RGB,linear; LAB,linear; RGB,cubic; LAB,cubic

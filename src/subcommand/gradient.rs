@@ -1,17 +1,16 @@
 use crate::color_scheme::{self, Colors, ColorScheme};
 use crate::grid::Grid;
-use crate::{image, cli};
+use crate::{cli, image, utils};
 use std::process::exit;
-use std::io;
 
-pub fn gradient(
-	writer: Box<dyn io::Write>,
-	args: cli::SubcommandGradientArgs,
-) {
+pub fn gradient(args: cli::SubcommandGradientArgs) {
 	let cli::SubcommandGradientArgs {
 		color_spec,
 		layout,
+		file,
 	} = args;
+
+	let writer = utils::output_writer(&file);
 
 	let colors = Colors::try_from(&color_spec)
 		.unwrap_or_else(|err| {

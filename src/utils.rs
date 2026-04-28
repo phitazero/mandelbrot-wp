@@ -3,7 +3,7 @@ use crate::math::ColorVec;
 use crate::image;
 use color_space::Rgb;
 use std::error::Error;
-use std::{fmt, fs};
+use std::{fmt, fs, io};
 
 #[derive(Debug)]
 pub struct ParseColorError {
@@ -69,4 +69,12 @@ pub fn save_zoom_step(
 		zoom_buffer_size,
 		&grid,
 	);
+}
+
+pub fn output_writer(file: &str) -> Box<dyn io::Write> {
+	if file == "-" {
+		Box::new(io::stdout())
+	} else {
+		Box::new(create_file(&file))
+	}
 }

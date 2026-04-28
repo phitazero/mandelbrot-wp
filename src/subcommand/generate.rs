@@ -3,21 +3,20 @@ use crate::cli::{self, GenOptions};
 use crate::math::{self, ComplexPlaneView};
 use crate::math::julia::SetKind;
 use crate::grid::Grid;
-use crate::image;
+use crate::{image, utils};
 use crate::seed::Seed;
 use num::complex::Complex64;
 use std::process::exit;
 use std::f64::consts::TAU;
-use std::io;
 
-pub fn generate(
-	writer: Box<dyn io::Write>,
-	args: cli::SubcommandGenerateArgs,
-) {
+pub fn generate(args: cli::SubcommandGenerateArgs) {
 	let cli::SubcommandGenerateArgs {
 		gen_options,
 		color_scheme_options,
+		file,
 	} = args;
+
+	let writer = utils::output_writer(&file);
 
 	let color_scheme = ColorScheme::try_from(&color_scheme_options)
 		.unwrap_or_else(|err| {
