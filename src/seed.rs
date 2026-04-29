@@ -31,8 +31,7 @@ impl Seed {
 
 		let filename = &hasher.finalize().to_hex()[..16];
 
-		let seed_cache_dir = utils::cache_dir()?
-			.join("mandelbrot-wp");
+		let seed_cache_dir = utils::cache_dir()?;
 
 		if !seed_cache_dir.exists() {
 			fs::create_dir_all(&seed_cache_dir)?;

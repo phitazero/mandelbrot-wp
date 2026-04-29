@@ -83,4 +83,5 @@ pub fn output_writer(file: &str) -> Box<dyn io::Write> {
 pub fn cache_dir() -> Result<PathBuf, String> {
 	dirs::cache_dir()
 		.ok_or_else(|| String::from("couldn't find cache dir"))
+		.map(|path| path.join("mandelbrot-wp"))
 }
