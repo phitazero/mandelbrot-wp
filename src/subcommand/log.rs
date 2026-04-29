@@ -1,5 +1,6 @@
 use crate::seed::Seed;
 use crate::utils;
+use crate::color_scheme::{ColorSpace, Interpolation};
 use std::error::Error;
 use std::{fs, io};
 
@@ -56,6 +57,17 @@ fn print_seed(hash_and_seed: &HashAndSeed) {
 	println!("Date: {}", seed.created_at.to_rfc2822());
 	println!("Gradient: '{}'", seed.gradient);
 	println!("Set color: '{}'", seed.set_color);
+	println!(
+		"{}, {}",
+		match seed.color_space {
+		    ColorSpace::Rgb => "RGB",
+		    ColorSpace::Lab => "LAB",
+		},
+		match seed.interpolation {
+		    Interpolation::Linear => "Linear",
+		    Interpolation::Cubic => "Cubic",
+		},
+	);
 	println!();
 }
 

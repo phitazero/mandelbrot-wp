@@ -1,6 +1,7 @@
 use crate::math::{self, GradientColorSpace, GradientRgb};
 use crate::cli::{ColorSchemeOptions, ColorSpec};
 use crate::utils;
+use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::error::Error;
 
@@ -17,13 +18,13 @@ pub struct Colors {
 	set_color: [u8; 3],
 }
 
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, clap::ValueEnum, Serialize, Deserialize)]
 pub enum ColorSpace {
 	Rgb,
 	Lab,
 }
 
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, clap::ValueEnum, Serialize, Deserialize)]
 pub enum Interpolation {
 	Linear,
 	Cubic,

@@ -1,3 +1,4 @@
+use crate::color_scheme::{ColorSpace, Interpolation};
 use crate::math::julia::SetKind;
 use crate::utils;
 use num::complex::Complex64;
@@ -15,6 +16,8 @@ pub struct Seed {
 	pub total_zoom: f64,
 	pub rotation: f64,
 	pub set_kind: SetKind,
+	pub interpolation: Interpolation,
+	pub color_space: ColorSpace,
 
 	// maybe someday i'll implement a way to (de)serialize colors and gradients
 	pub gradient: String,

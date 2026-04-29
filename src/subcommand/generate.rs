@@ -44,6 +44,8 @@ pub fn generate(args: cli::SubcommandGenerateArgs) -> Result<(), Box<dyn Error>>
 		set_kind: grid_gen_result.set_kind,
 		gradient: color_scheme_options.color_spec.gradient,
 		set_color: color_scheme_options.color_spec.set_color,
+		interpolation: color_scheme_options.interpolation,
+		color_space: color_scheme_options.color_space,
 	};
 
 	seed.save()
