@@ -6,10 +6,10 @@ use crate::grid::Grid;
 use crate::{image, utils};
 use crate::seed::Seed;
 use num::complex::Complex64;
-use std::process::exit;
+use std::error::Error;
 use std::f64::consts::TAU;
 
-pub fn generate(args: cli::SubcommandGenerateArgs) {
+pub fn generate(args: cli::SubcommandGenerateArgs) -> Result<(), Box<dyn Error>> {
 	let cli::SubcommandGenerateArgs {
 		gen_options,
 		color_scheme_options,
@@ -18,27 +18,21 @@ pub fn generate(args: cli::SubcommandGenerateArgs) {
 
 	let writer = utils::output_writer(&file);
 
-	let color_scheme = ColorScheme::try_from(&color_scheme_options)
-		.unwrap_or_else(|err| {
-			eprintln!("fatal: couldn't parse color scheme: {err}");
-			exit(1);
-		});
+	let color_scheme = ColorScheme::try_from(&color_scheme_options)?;
 
 	const N_MISSES_ALLOWED: u8 = 5;
 
 	let grid_gen_result = (|| {
 		for _ in 0..N_MISSES_ALLOWED {
 			if let Some(grid) = gen_iterations_grid(&gen_options) {
-				return grid;
+				return Ok(grid);
 			}
 
 			eprintln!("Miss!")
 		}
 
-		eprintln!("fatal: couldn't locate any points in set after {N_MISSES_ALLOWED} attempts");
-		eprintln!("may be caused by a low zoom buffer size");
-		exit(1);
-	})();
+		return Err(format!("couldn't locate any points in set after {N_MISSES_ALLOWED} attempts\nmay be caused by a low zoom buffer size"));
+	})()?;
 
 	let seed = Seed {
 		created_at: chrono::Local::now(),
@@ -90,6 +84,8 @@ pub fn generate(args: cli::SubcommandGenerateArgs) {
 		gen_options.output_height,
 		&grid
 	);
+
+	Ok(())
 }
 
 fn gen_iterations_grid(gen_options: &GenOptions) -> Option<GridGenResult> {

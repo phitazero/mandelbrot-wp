@@ -1,4 +1,5 @@
 use crate::math::julia::SetKind;
+use crate::utils;
 use num::complex::Complex64;
 use serde::{Deserialize, Serialize};
 use chrono::{Local, DateTime};
@@ -31,8 +32,7 @@ impl Seed {
 		let hash_string = &hasher.finalize().to_hex()[..16];
 		let filename = format!("{hash_string}.json");
 
-		let seed_cache_dir = dirs::cache_dir()
-			.ok_or_else(|| String::from("couldn't find cache dir"))?
+		let seed_cache_dir = utils::cache_dir()?
 			.join("mandelbrot-wp");
 
 		if !seed_cache_dir.exists() {

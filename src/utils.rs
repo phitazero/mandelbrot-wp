@@ -3,6 +3,7 @@ use crate::math::ColorVec;
 use crate::image;
 use color_space::Rgb;
 use std::error::Error;
+use std::path::PathBuf;
 use std::{fmt, fs, io};
 
 #[derive(Debug)]
@@ -77,4 +78,9 @@ pub fn output_writer(file: &str) -> Box<dyn io::Write> {
 	} else {
 		Box::new(create_file(&file))
 	}
+}
+
+pub fn cache_dir() -> Result<PathBuf, String> {
+	dirs::cache_dir()
+		.ok_or_else(|| String::from("couldn't find cache dir"))
 }

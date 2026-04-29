@@ -16,11 +16,16 @@ fn main() {
 		subcommand,
 	} = Cli::parse();
 
-	match subcommand {
+	let result = match subcommand {
 		Command::Generate(args) =>
 			subcommand::generate(args),
 
 		Command::Gradient(args) =>
 			subcommand::gradient(args),
-	}
+	};
+
+	result.unwrap_or_else(|err| {
+		eprintln!("fatal: {err}");
+		std::process::exit(1);
+	});
 }

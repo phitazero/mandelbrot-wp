@@ -1,9 +1,9 @@
 use crate::color_scheme::{self, Colors, ColorScheme};
 use crate::grid::Grid;
 use crate::{cli, image, utils};
-use std::process::exit;
+use std::error::Error;
 
-pub fn gradient(args: cli::SubcommandGradientArgs) {
+pub fn gradient(args: cli::SubcommandGradientArgs) -> Result<(), Box<dyn Error>> {
 	let cli::SubcommandGradientArgs {
 		color_spec,
 		layout,
@@ -12,11 +12,7 @@ pub fn gradient(args: cli::SubcommandGradientArgs) {
 
 	let writer = utils::output_writer(&file);
 
-	let colors = Colors::try_from(&color_spec)
-		.unwrap_or_else(|err| {
-			eprintln!("fatal: couldn't parse colors: {err}");
-			exit(1);
-		});
+	let colors = Colors::try_from(&color_spec)?;
 
 	let scheme_lin_rgb = ColorScheme::from_colors(
 		colors.clone(),
@@ -100,4 +96,6 @@ pub fn gradient(args: cli::SubcommandGradientArgs) {
 		4 * GRADIENT_HEIGHT,
 		&grid
 	);
+
+	Ok(())
 }
