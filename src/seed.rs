@@ -29,8 +29,7 @@ impl Seed {
 		let mut hasher = blake3::Hasher::new();
 		hasher.update(json_string.as_bytes());
 
-		let hash_string = &hasher.finalize().to_hex()[..16];
-		let filename = format!("{hash_string}.json");
+		let filename = &hasher.finalize().to_hex()[..16];
 
 		let seed_cache_dir = utils::cache_dir()?
 			.join("mandelbrot-wp");
