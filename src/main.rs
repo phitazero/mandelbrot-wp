@@ -22,6 +22,9 @@ fn main() {
 
 		Command::Gradient(args) =>
 			subcommand::gradient(args),
+
+		Command::Log =>
+			subcommand::log(),
 	};
 
 	result.unwrap_or_else(|err| {

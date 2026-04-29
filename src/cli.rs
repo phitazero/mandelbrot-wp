@@ -11,6 +11,7 @@ pub struct Cli {
 pub enum Command {
 	Generate(SubcommandGenerateArgs),
 	Gradient(SubcommandGradientArgs),
+	Log,
 }
 
 #[derive(Args, Debug)]
