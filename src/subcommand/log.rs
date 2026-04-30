@@ -41,13 +41,10 @@ fn process_dir_entry_result(
 
 	let filename = path.file_name().unwrap().to_str().unwrap().to_string();
 
-	let file = fs::File::open(&path)	
-		.map_err(|err| format!("couldn't open/read file '{filename}': {err}"))?;
-
-	let seed = serde_json::from_reader(file)
-		.map_err(|err| format!("malformed JSON in file '{filename}': {err}"))?;
-
-	Ok(HashAndSeed { hash: filename, seed })
+	Ok(HashAndSeed {
+		seed: Seed::get_by_hash(&filename)?,
+		hash: filename,
+	})
 }
 
 fn print_seed(hash_and_seed: &HashAndSeed) {

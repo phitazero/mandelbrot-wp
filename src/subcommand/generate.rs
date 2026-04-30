@@ -53,32 +53,7 @@ pub fn generate(args: cli::SubcommandGenerateArgs) -> Result<(), Box<dyn Error>>
 			eprintln!("error: couldn't save seed: {err}")
 		});
 
-	let mut grid = grid_gen_result.grid.map_some(|n| n as f64)
-		.map_some(|x| f64::log2(x + 1.0));
-
-	let has_points_outside = grid.data
-		.iter()
-		.any(|opt| opt.is_some());
-
-	if has_points_outside {
-		let max = grid.data
-			.iter()
-			.flatten()
-			.copied()
-			.reduce(f64::max)
-			.unwrap();
-
-		let min = grid.data
-			.iter()
-			.flatten()
-			.copied()
-			.reduce(f64::min)
-			.unwrap();
-
-		grid = grid.map_some(|x| math::inv_lerp(x, min, max));
-	}
-
-	let grid = grid.map(|x_opt| color_scheme.get_at(x_opt));
+	let grid = color_scheme.apply_to(grid_gen_result.grid);
 
 	image::write_colored(
 		writer,

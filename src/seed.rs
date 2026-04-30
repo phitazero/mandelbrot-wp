@@ -47,4 +47,18 @@ impl Seed {
 
 		Ok(())
 	}
+
+	pub fn get_by_hash(hash: &str) -> Result<Seed, String> {
+		let path = utils::cache_dir()?
+			.join(hash);
+
+		let file = fs::File::open(&path)
+			.map_err(|err| format!("couldn't open/read file '{hash}': {err}"))?;
+
+		let seed = serde_json::from_reader(file)
+			.map_err(|err| format!("malformed JSON in file '{hash}': {err}"))?;
+
+		Ok(seed)
+
+	}
 }

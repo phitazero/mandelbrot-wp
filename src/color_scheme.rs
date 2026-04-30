@@ -1,3 +1,4 @@
+use crate::grid::Grid;
 use crate::math::{self, GradientColorSpace, GradientRgb};
 use crate::cli::{ColorSchemeOptions, ColorSpec};
 use crate::utils;
@@ -84,6 +85,36 @@ impl ColorScheme {
 			set_color: colors.set_color,
 			interpolation,
 		}
+	}
+
+	pub fn apply_to(&self, grid: Grid<Option<u32>>) -> Grid<[u8; 3]> {
+		let mut grid = grid
+			.map_some(|n| n as f64)
+			.map_some(|x| f64::log2(x + 1.0));
+
+		let has_points_outside = grid.data
+			.iter()
+			.any(|opt| opt.is_some());
+
+		if has_points_outside {
+			let max = grid.data
+				.iter()
+				.flatten()
+				.copied()
+				.reduce(f64::max)
+				.unwrap();
+
+			let min = grid.data
+				.iter()
+				.flatten()
+				.copied()
+				.reduce(f64::min)
+				.unwrap();
+
+			grid = grid.map_some(|x| math::inv_lerp(x, min, max));
+		}
+
+		grid.map(|x_opt| self.get_at(x_opt))
 	}
 }
 
