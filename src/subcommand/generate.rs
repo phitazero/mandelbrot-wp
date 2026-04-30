@@ -97,7 +97,8 @@ fn gen_iterations_grid(gen_options: &GenOptions) -> Option<GridGenResult> {
 	plane_view.center = center;
 
 	let total_zoom = zoom_factor.powi(n_zooms.into());
-	plane_view.units_per_pixel /= total_zoom;
+	plane_view.units_per_pixel =
+		(set_kind.width() / output_width as f64) / total_zoom;
 
 	let rotation = rand::random_range(0.0..TAU);
 	plane_view.rotation = rotation;
