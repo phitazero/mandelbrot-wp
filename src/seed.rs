@@ -18,6 +18,7 @@ pub struct Seed {
 	pub set_kind: SetKind,
 	pub interpolation: Interpolation,
 	pub color_space: ColorSpace,
+	pub iterations: u32,
 
 	// maybe someday i'll implement a way to (de)serialize colors and gradients
 	pub gradient: String,

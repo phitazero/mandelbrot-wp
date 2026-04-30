@@ -46,6 +46,7 @@ pub fn generate(args: cli::SubcommandGenerateArgs) -> Result<(), Box<dyn Error>>
 		set_color: color_scheme_options.color_spec.set_color,
 		interpolation: color_scheme_options.interpolation,
 		color_space: color_scheme_options.color_space,
+		iterations: gen_options.iterations,
 	};
 
 	seed.save()

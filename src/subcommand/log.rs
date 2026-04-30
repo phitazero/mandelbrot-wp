@@ -54,6 +54,7 @@ fn print_seed(hash_and_seed: &HashAndSeed) {
 	println!("Date: {}", seed.created_at.to_rfc2822());
 	println!("Gradient: '{}'", seed.gradient);
 	println!("Set color: '{}'", seed.set_color);
+	println!("Iterations: {}", seed.iterations);
 	println!(
 		"{}, {}",
 		match seed.color_space {
