@@ -23,6 +23,9 @@ fn main() {
 		Command::Gradient(args) =>
 			subcommand::gradient(args),
 
+		Command::Replicate(args) =>
+			subcommand::replicate(args),
+
 		Command::Log =>
 			subcommand::log(),
 	};

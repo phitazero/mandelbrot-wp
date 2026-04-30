@@ -44,6 +44,13 @@ impl SetKind {
 			}
 		}
 	}
+
+	pub fn width(&self) -> f64 {
+		match self {
+			Self::Mandelbrot => 2.5,
+			Self::Julia(_) => 4.0,
+		}
+	}
 }
 
 /// Returns the number of iterations the point has passed before going to infinity, or None if belongs to the set

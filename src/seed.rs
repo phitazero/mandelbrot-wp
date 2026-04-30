@@ -1,6 +1,7 @@
+use crate::cli::{ColorSchemeOptions, ColorSpec};
 use crate::color_scheme::{ColorSpace, Interpolation};
 use crate::math::julia::SetKind;
-use crate::utils;
+use crate::{utils, cli};
 use num::complex::Complex64;
 use serde::{Deserialize, Serialize};
 use chrono::{Local, DateTime};
@@ -60,6 +61,50 @@ impl Seed {
 			.map_err(|err| format!("malformed JSON in file '{hash}': {err}"))?;
 
 		Ok(seed)
-
 	}
+
+	pub fn override_with(mut self, overrides: cli::ReplicateOverrides) -> Self {
+		if let Some(value) = overrides.output_width {
+			self.width = value;
+		}
+
+		if let Some(value) = overrides.output_height {
+			self.height = value;
+		}
+
+		if let Some(value) = overrides.color_space {
+			self.color_space = value;
+		}
+
+		if let Some(value) = overrides.interpolation {
+			self.interpolation = value;
+		}
+
+		if let Some(value) = overrides.gradient {
+			self.gradient = value;
+		}
+
+		if let Some(value) = overrides.set_color {
+			self.set_color = value;
+		}
+
+		if let Some(value) = overrides.iterations {
+			self.iterations = value;
+		}
+
+		self
+	}
+}
+
+impl From<&Seed> for ColorSchemeOptions {
+    fn from(seed: &Seed) -> Self {
+        Self {
+            color_spec: ColorSpec {
+                gradient: seed.gradient.clone(),
+                set_color: seed.set_color.clone(),
+            },
+            color_space: seed.color_space,
+            interpolation: seed.interpolation,
+        }
+    }
 }

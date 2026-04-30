@@ -11,6 +11,7 @@ pub struct Cli {
 pub enum Command {
 	Generate(SubcommandGenerateArgs),
 	Gradient(SubcommandGradientArgs),
+	Replicate(SubcommandReplicateArgs),
 	Log,
 }
 
@@ -142,4 +143,47 @@ pub struct ColorSpec {
 	#[arg(short = 'S', long)]
 	#[arg(default_value = "000000")]
 	pub set_color: String,
+}
+
+#[derive(Args, Debug)]
+pub struct SubcommandReplicateArgs {
+	/// output file, - for stdout
+	pub file: String,
+
+	/// hash (or the first few chars) of the seed to replicate
+	pub hash: String,
+
+	#[command(flatten)]
+	pub overrides: ReplicateOverrides,
+}
+
+#[derive(Args, Debug)]
+pub struct ReplicateOverrides {
+	/// output width override
+	#[arg(short = 'w', long)]
+	pub output_width: Option<u16>,
+
+	/// output height override
+	#[arg(short = 'h', long)]
+	pub output_height: Option<u16>,
+
+	/// color space override
+	#[arg(short = 'C', long)]
+	pub color_space: Option<crate::color_scheme::ColorSpace>,
+
+	/// interpolation override
+	#[arg(short = 'I', long)]
+	pub interpolation: Option<crate::color_scheme::Interpolation>,
+
+	/// gradient override
+	#[arg(short = 'G', long)]
+	pub gradient: Option<String>,
+
+	/// set color override
+	#[arg(short = 'S', long)]
+	pub set_color: Option<String>,
+
+	/// iterations number override
+	#[arg(short = 'N', long)]
+	pub iterations: Option<u32>,
 }
