@@ -51,6 +51,11 @@ fn print_seed(hash_and_seed: &HashAndSeed) {
 	let HashAndSeed { hash, seed } = hash_and_seed;
 
 	println!("[ {hash} ]");
+
+	if seed.is_replica {
+		println!("- replica -");
+	}
+
 	println!("Date: {}", seed.created_at.to_rfc2822());
 	println!("Gradient: '{}'", seed.gradient);
 	println!("Set color: '{}'", seed.set_color);

@@ -17,7 +17,7 @@ pub fn replicate(
 	let writer = utils::output_writer(&file);
 
 	let hash = match_hash(&hash)?;
-	let seed = Seed::get_by_hash(&hash)?.override_with(overrides);
+	let mut seed = Seed::get_by_hash(&hash)?.override_with(overrides);
 
 	let color_scheme_options = cli::ColorSchemeOptions::from(&seed);
 	let color_scheme = ColorScheme::try_from(&color_scheme_options)?;
@@ -35,6 +35,14 @@ pub fn replicate(
 		.par_map(|z| math::julia::iterate(seed.set_kind, z, seed.iterations));
 
 	let grid = color_scheme.apply_to(grid);
+
+	seed.is_replica = true;
+	seed.created_at = chrono::Local::now();
+
+	seed.save()
+		.unwrap_or_else(|err| {
+			eprintln!("error: couldn't save seed: {err}")
+		});
 
 	image::write_colored(
 		writer,

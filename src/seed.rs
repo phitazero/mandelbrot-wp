@@ -11,6 +11,7 @@ use std::fs;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Seed {
 	pub created_at: DateTime<Local>,
+	pub is_replica: bool,
 	pub width: u16,
 	pub height: u16,
 	pub center: Complex64,

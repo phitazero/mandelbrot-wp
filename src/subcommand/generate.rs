@@ -36,6 +36,7 @@ pub fn generate(args: cli::SubcommandGenerateArgs) -> Result<(), Box<dyn Error>>
 
 	let seed = Seed {
 		created_at: chrono::Local::now(),
+		is_replica: false,
 		width: gen_options.output_width,
 		height: gen_options.output_height,
 		center: grid_gen_result.center,
